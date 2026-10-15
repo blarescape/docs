@@ -15,10 +15,10 @@ We, the undersigned, agree to take primary responsibility for our selected core 
     *   *Presentation Duty:* Code Reviews, Pull Request processing, Project Documentation, Markdown structure.
 ## 2. Core Technical Stack Selection
 Following our Week 1 language negotiation lab, our team has built a consensus to utilize the following technological stack:
-*   **Language & Runtime Environment:** [e.g., Node.js v20+, Python 3.11]
-*   **Framework:** [e.g., Express.js, FastAPI]
-*   **Database Management System:** [e.g., PostgreSQL, MongoDB]
-*   **Primary Hosting/Testing Tools:** [e.g., Postman, Render, GitHub Actions]
+*   **Language & Runtime Environment:** Node.js
+*   **Framework:** Fastify
+*   **Database Management System:** MongoDB
+*   **Primary Hosting/Testing Tools:** Postman, Hosting TBD (probably SKNI Server)
 ## 3. Communication & Workspace Alignment
 To maintain professional B2+ ESL communication standards and run smooth Agile sprints, we commit to the following working rules:
 1. **The Stand-up Standard:** We will arrive prepared for the daily 15-minute stand-up sessions, utilizing the *Past Simple* tense for completed tasks and *Present Perfect* for blocks or ongoing work.
