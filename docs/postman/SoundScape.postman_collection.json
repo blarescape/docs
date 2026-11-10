@@ -1,0 +1,1738 @@
+{
+  "info": {
+    "name": "SoundScape API - Endpoints and Live CRUD",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "SoundScape Fastify API collection aligned with docs/openapi.yaml and src/routes/api. Run folders in order. Folder 01 is a self-contained contributor CRUD with no admin token. Folder 02 covers all 21 business endpoints plus persistence, analytics and error checks. Use a disposable development database. Set baseUrl and adminToken in a local environment; no credentials are included in this public-safe collection. Collection variables hold only baseUrl; runtime IDs and dates use local pm.variables. No payment endpoints exist in this project."
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "00 - Service",
+      "item": [
+        {
+          "name": "Service greeting",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": []
+            },
+            "description": "GET /. Synthetic test data only. Run the containing folder in order."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => { pm.response.to.have.status(200); });",
+                  "pm.test(\"name\", () => { pm.expect(pm.response.json().name).to.eql('blarescape-backend'); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "Health check",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/health",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "health"
+              ]
+            },
+            "description": "GET /health. Synthetic test data only. Run the containing folder in order."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => { pm.response.to.have.status(200); });",
+                  "pm.test(\"status\", () => { pm.expect(pm.response.json().status).to.eql('ok'); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "OpenAPI JSON",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/openapi.json",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "openapi.json"
+              ]
+            },
+            "description": "GET /openapi.json. Synthetic test data only. Run the containing folder in order."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => { pm.response.to.have.status(200); });",
+                  "pm.test(\"info.title\", () => { pm.expect(pm.response.json().info.title).to.eql('SoundScape API'); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "Interactive API documentation",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/docs/",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "docs"
+              ]
+            },
+            "description": "GET /docs/. Synthetic test data only. Run the containing folder in order."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => { pm.response.to.have.status(200); });",
+                  "pm.test(\"Swagger UI HTML\", () => { pm.expect(pm.response.headers.get('Content-Type')).to.include('text/html'); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "01 - Contributors CRUD (no admin token)",
+      "description": "Standalone live CRUD: creates a unique synthetic contributor, reads it, updates it, reads the persisted update, deletes it, and verifies 404. Requires MongoDB. Does not require admin credentials.",
+      "item": [
+        {
+          "name": "Create contributor",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/contributors",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "contributors"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"anonymousDeviceId\": \"postman-{{runId}}\",\n  \"displayName\": \"Postman Contributor\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "POST /api/v1/contributors. Synthetic test data only. Run the containing folder in order."
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.variables.set('runId', pm.variables.replaceIn('{{$guid}}'));",
+                  "pm.variables.set('recordedAt', new Date(Date.now() - 60000).toISOString());",
+                  "pm.variables.set('from', new Date(Date.now() - 3600000).toISOString());",
+                  "pm.variables.set('to', new Date().toISOString());"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", () => { pm.response.to.have.status(201); });",
+                  "pm.test(\"Generated ObjectId\", () => { pm.expect(pm.response.json().id).to.match(/^[a-f0-9]{24}$/i); });",
+                  "if (pm.response.code === 201) { pm.variables.set('crudContributorId', pm.response.json().id); }",
+                  "pm.test(\"displayName\", () => { pm.expect(pm.response.json().displayName).to.eql('Postman Contributor'); });",
+                  "pm.test(\"readingsCount\", () => { pm.expect(pm.response.json().readingsCount).to.eql(0); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "Read contributor",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/contributors/{{crudContributorId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "contributors",
+                "{{crudContributorId}}"
+              ]
+            },
+            "description": "GET /api/v1/contributors/{{crudContributorId}}. Synthetic test data only. Run the containing folder in order."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => { pm.response.to.have.status(200); });",
+                  "pm.test(\"id\", () => { pm.expect(pm.response.json().id).to.eql(pm.variables.get('crudContributorId')); });",
+                  "pm.test(\"displayName\", () => { pm.expect(pm.response.json().displayName).to.eql('Postman Contributor'); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "Update contributor",
+          "request": {
+            "method": "PATCH",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/contributors/{{crudContributorId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "contributors",
+                "{{crudContributorId}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"displayName\": \"Postman Contributor Updated\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "PATCH /api/v1/contributors/{{crudContributorId}}. Synthetic test data only. Run the containing folder in order."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => { pm.response.to.have.status(200); });",
+                  "pm.test(\"id\", () => { pm.expect(pm.response.json().id).to.eql(pm.variables.get('crudContributorId')); });",
+                  "pm.test(\"displayName\", () => { pm.expect(pm.response.json().displayName).to.eql('Postman Contributor Updated'); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "Read persisted update",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/contributors/{{crudContributorId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "contributors",
+                "{{crudContributorId}}"
+              ]
+            },
+            "description": "GET /api/v1/contributors/{{crudContributorId}}. Synthetic test data only. Run the containing folder in order."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => { pm.response.to.have.status(200); });",
+                  "pm.test(\"displayName\", () => { pm.expect(pm.response.json().displayName).to.eql('Postman Contributor Updated'); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "Delete contributor",
+          "request": {
+            "method": "DELETE",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/contributors/{{crudContributorId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "contributors",
+                "{{crudContributorId}}"
+              ]
+            },
+            "description": "DELETE /api/v1/contributors/{{crudContributorId}}. Synthetic test data only. Run the containing folder in order."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 204\", () => { pm.response.to.have.status(204); });",
+                  "pm.test(\"Empty response\", () => { pm.expect(pm.response.text()).to.eql(''); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "Confirm contributor deleted",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/contributors/{{crudContributorId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "contributors",
+                "{{crudContributorId}}"
+              ]
+            },
+            "description": "GET /api/v1/contributors/{{crudContributorId}}. Synthetic test data only. Run the containing folder in order."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 404\", () => { pm.response.to.have.status(404); });",
+                  "pm.test(\"message\", () => { pm.expect(pm.response.json().message).to.eql('Contributor not found'); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "02 - All business endpoints (admin token required)",
+      "description": "Ordered integration workflow covering all 21 business method/path pairs. Creates a neighborhood, contributor, school and reading; exercises analytics; removes only the created test records in dependency order. Set adminToken locally. Coordinates are a synthetic fixture in Warsaw, not user location.",
+      "item": [
+        {
+          "name": "Create neighborhood",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/neighborhoods",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "neighborhoods"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Postman Test Neighborhood\",\n  \"slug\": \"postman-{{runId}}\",\n  \"city\": \"Postman Test City\",\n  \"boundary\": {\n    \"type\": \"Polygon\",\n    \"coordinates\": [\n      [\n        [\n          21,\n          52\n        ],\n        [\n          21.02,\n          52\n        ],\n        [\n          21.02,\n          52.02\n        ],\n        [\n          21,\n          52.02\n        ],\n        [\n          21,\n          52\n        ]\n      ]\n    ]\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "POST /api/v1/neighborhoods. Requires adminToken environment variable. Synthetic test data only. Run the containing folder in order."
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.variables.set('runId', pm.variables.replaceIn('{{$guid}}'));",
+                  "pm.variables.set('recordedAt', new Date(Date.now() - 60000).toISOString());",
+                  "pm.variables.set('from', new Date(Date.now() - 3600000).toISOString());",
+                  "pm.variables.set('to', new Date().toISOString());"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", () => { pm.response.to.have.status(201); });",
+                  "pm.test(\"Generated ObjectId\", () => { pm.expect(pm.response.json().id).to.match(/^[a-f0-9]{24}$/i); });",
+                  "if (pm.response.code === 201) { pm.variables.set('neighborhoodId', pm.response.json().id); }",
+                  "pm.test(\"boundary.type\", () => { pm.expect(pm.response.json().boundary.type).to.eql('Polygon'); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "List neighborhoods",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/neighborhoods?limit=50&offset=0&city=Postman Test City",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "neighborhoods"
+              ],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "50"
+                },
+                {
+                  "key": "offset",
+                  "value": "0"
+                },
+                {
+                  "key": "city",
+                  "value": "Postman Test City"
+                }
+              ]
+            },
+            "description": "GET /api/v1/neighborhoods. Synthetic test data only. Run the containing folder in order."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => { pm.response.to.have.status(200); });",
+                  "pm.test(\"Paginated response\", () => { pm.expect(pm.response.json()).to.include.keys('items', 'total', 'limit', 'offset'); pm.expect(pm.response.json().items).to.be.an('array'); });",
+                  "pm.test(\"Created neighborhood is listed\", () => { pm.expect(pm.response.json().items.map(x => x.id)).to.include(pm.variables.get('neighborhoodId')); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "Read neighborhood",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/neighborhoods/{{neighborhoodId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "neighborhoods",
+                "{{neighborhoodId}}"
+              ]
+            },
+            "description": "GET /api/v1/neighborhoods/{{neighborhoodId}}. Synthetic test data only. Run the containing folder in order."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => { pm.response.to.have.status(200); });",
+                  "pm.test(\"id\", () => { pm.expect(pm.response.json().id).to.eql(pm.variables.get('neighborhoodId')); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "Replace neighborhood",
+          "request": {
+            "method": "PUT",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/neighborhoods/{{neighborhoodId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "neighborhoods",
+                "{{neighborhoodId}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Postman Test Neighborhood Updated\",\n  \"slug\": \"postman-{{runId}}\",\n  \"city\": \"Postman Test City\",\n  \"boundary\": {\n    \"type\": \"Polygon\",\n    \"coordinates\": [\n      [\n        [\n          21,\n          52\n        ],\n        [\n          21.02,\n          52\n        ],\n        [\n          21.02,\n          52.02\n        ],\n        [\n          21,\n          52.02\n        ],\n        [\n          21,\n          52\n        ]\n      ]\n    ]\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "PUT /api/v1/neighborhoods/{{neighborhoodId}}. Requires adminToken environment variable. Synthetic test data only. Run the containing folder in order."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => { pm.response.to.have.status(200); });",
+                  "pm.test(\"name\", () => { pm.expect(pm.response.json().name).to.eql('Postman Test Neighborhood Updated'); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "Register contributor",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/contributors",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "contributors"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"anonymousDeviceId\": \"postman-{{runId}}\",\n  \"displayName\": \"Postman Contributor\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "POST /api/v1/contributors. Synthetic test data only. Run the containing folder in order."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", () => { pm.response.to.have.status(201); });",
+                  "pm.test(\"Generated ObjectId\", () => { pm.expect(pm.response.json().id).to.match(/^[a-f0-9]{24}$/i); });",
+                  "if (pm.response.code === 201) { pm.variables.set('contributorId', pm.response.json().id); }",
+                  "pm.test(\"readingsCount\", () => { pm.expect(pm.response.json().readingsCount).to.eql(0); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "Read contributor",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/contributors/{{contributorId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "contributors",
+                "{{contributorId}}"
+              ]
+            },
+            "description": "GET /api/v1/contributors/{{contributorId}}. Synthetic test data only. Run the containing folder in order."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => { pm.response.to.have.status(200); });",
+                  "pm.test(\"id\", () => { pm.expect(pm.response.json().id).to.eql(pm.variables.get('contributorId')); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "Update contributor",
+          "request": {
+            "method": "PATCH",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/contributors/{{contributorId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "contributors",
+                "{{contributorId}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"displayName\": \"Postman Contributor Updated\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "PATCH /api/v1/contributors/{{contributorId}}. Synthetic test data only. Run the containing folder in order."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => { pm.response.to.have.status(200); });",
+                  "pm.test(\"displayName\", () => { pm.expect(pm.response.json().displayName).to.eql('Postman Contributor Updated'); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "Create sensitive site",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/sensitive-sites",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "sensitive-sites"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Postman Test School\",\n  \"siteType\": \"school\",\n  \"longitude\": 21.01,\n  \"latitude\": 52.01,\n  \"protectionRadiusMeters\": 200\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "POST /api/v1/sensitive-sites. Requires adminToken environment variable. Synthetic test data only. Run the containing folder in order."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", () => { pm.response.to.have.status(201); });",
+                  "pm.test(\"Generated ObjectId\", () => { pm.expect(pm.response.json().id).to.match(/^[a-f0-9]{24}$/i); });",
+                  "if (pm.response.code === 201) { pm.variables.set('siteId', pm.response.json().id); }",
+                  "pm.test(\"neighborhoodId\", () => { pm.expect(pm.response.json().neighborhoodId).to.eql(pm.variables.get('neighborhoodId')); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "List sensitive sites",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/sensitive-sites?limit=50&offset=0&neighborhoodId={{neighborhoodId}}&siteType=school",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "sensitive-sites"
+              ],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "50"
+                },
+                {
+                  "key": "offset",
+                  "value": "0"
+                },
+                {
+                  "key": "neighborhoodId",
+                  "value": "{{neighborhoodId}}"
+                },
+                {
+                  "key": "siteType",
+                  "value": "school"
+                }
+              ]
+            },
+            "description": "GET /api/v1/sensitive-sites. Synthetic test data only. Run the containing folder in order."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => { pm.response.to.have.status(200); });",
+                  "pm.test(\"Paginated response\", () => { pm.expect(pm.response.json()).to.include.keys('items', 'total', 'limit', 'offset'); pm.expect(pm.response.json().items).to.be.an('array'); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "Read sensitive site",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/sensitive-sites/{{siteId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "sensitive-sites",
+                "{{siteId}}"
+              ]
+            },
+            "description": "GET /api/v1/sensitive-sites/{{siteId}}. Synthetic test data only. Run the containing folder in order."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => { pm.response.to.have.status(200); });",
+                  "pm.test(\"id\", () => { pm.expect(pm.response.json().id).to.eql(pm.variables.get('siteId')); });",
+                  "pm.test(\"neighborhoodId\", () => { pm.expect(pm.response.json().neighborhoodId).to.eql(pm.variables.get('neighborhoodId')); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "Replace sensitive site",
+          "request": {
+            "method": "PUT",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/sensitive-sites/{{siteId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "sensitive-sites",
+                "{{siteId}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Postman Test School Updated\",\n  \"siteType\": \"school\",\n  \"longitude\": 21.01,\n  \"latitude\": 52.01,\n  \"protectionRadiusMeters\": 250\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "PUT /api/v1/sensitive-sites/{{siteId}}. Requires adminToken environment variable. Synthetic test data only. Run the containing folder in order."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => { pm.response.to.have.status(200); });",
+                  "pm.test(\"name\", () => { pm.expect(pm.response.json().name).to.eql('Postman Test School Updated'); });",
+                  "pm.test(\"protectionRadiusMeters\", () => { pm.expect(pm.response.json().protectionRadiusMeters).to.eql(250); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "Submit noise reading",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/metrics/noise",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "metrics",
+                "noise"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"contributorId\": \"{{contributorId}}\",\n  \"longitude\": 21.01,\n  \"latitude\": 52.01,\n  \"decibelLevel\": 65,\n  \"recordedAt\": \"{{recordedAt}}\",\n  \"noiseSource\": \"traffic\",\n  \"measurementDurationSeconds\": 30\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "POST /api/v1/metrics/noise. Synthetic test data only. Run the containing folder in order."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", () => { pm.response.to.have.status(201); });",
+                  "pm.test(\"Generated ObjectId\", () => { pm.expect(pm.response.json().id).to.match(/^[a-f0-9]{24}$/i); });",
+                  "if (pm.response.code === 201) { pm.variables.set('readingId', pm.response.json().id); }",
+                  "pm.test(\"neighborhoodId\", () => { pm.expect(pm.response.json().neighborhoodId).to.eql(pm.variables.get('neighborhoodId')); });",
+                  "pm.test(\"contributorId\", () => { pm.expect(pm.response.json().contributorId).to.eql(pm.variables.get('contributorId')); });",
+                  "pm.test(\"isFlagged\", () => { pm.expect(pm.response.json().isFlagged).to.eql(false); });",
+                  "pm.test(\"decibelLevel\", () => { pm.expect(pm.response.json().decibelLevel).to.eql(65); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "List noise readings",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/metrics/noise?limit=50&offset=0&contributorId={{contributorId}}&neighborhoodId={{neighborhoodId}}&from={{from}}&to={{to}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "metrics",
+                "noise"
+              ],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "50"
+                },
+                {
+                  "key": "offset",
+                  "value": "0"
+                },
+                {
+                  "key": "contributorId",
+                  "value": "{{contributorId}}"
+                },
+                {
+                  "key": "neighborhoodId",
+                  "value": "{{neighborhoodId}}"
+                },
+                {
+                  "key": "from",
+                  "value": "{{from}}"
+                },
+                {
+                  "key": "to",
+                  "value": "{{to}}"
+                },
+                {
+                  "key": "includeFlagged",
+                  "value": "true",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Public by default. To include flagged readings, enable includeFlagged=true and select Bearer auth using {{adminToken}}."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => { pm.response.to.have.status(200); });",
+                  "pm.test(\"Paginated response\", () => { pm.expect(pm.response.json()).to.include.keys('items', 'total', 'limit', 'offset'); pm.expect(pm.response.json().items).to.be.an('array'); });",
+                  "pm.test(\"total\", () => { pm.expect(pm.response.json().total).to.eql(1); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "Read noise reading",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/metrics/noise/{{readingId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "metrics",
+                "noise",
+                "{{readingId}}"
+              ]
+            },
+            "description": "GET /api/v1/metrics/noise/{{readingId}}. Synthetic test data only. Run the containing folder in order."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => { pm.response.to.have.status(200); });",
+                  "pm.test(\"id\", () => { pm.expect(pm.response.json().id).to.eql(pm.variables.get('readingId')); });",
+                  "pm.test(\"decibelLevel\", () => { pm.expect(pm.response.json().decibelLevel).to.eql(65); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "Update noise reading source",
+          "request": {
+            "method": "PATCH",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/metrics/noise/{{readingId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "metrics",
+                "noise",
+                "{{readingId}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"isFlagged\": false,\n  \"noiseSource\": \"construction\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "PATCH /api/v1/metrics/noise/{{readingId}}. Requires adminToken environment variable. Synthetic test data only. Run the containing folder in order."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => { pm.response.to.have.status(200); });",
+                  "pm.test(\"noiseSource\", () => { pm.expect(pm.response.json().noiseSource).to.eql('construction'); });",
+                  "pm.test(\"decibelLevel\", () => { pm.expect(pm.response.json().decibelLevel).to.eql(65); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "Read persisted noise update",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/metrics/noise/{{readingId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "metrics",
+                "noise",
+                "{{readingId}}"
+              ]
+            },
+            "description": "GET /api/v1/metrics/noise/{{readingId}}. Synthetic test data only. Run the containing folder in order."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => { pm.response.to.have.status(200); });",
+                  "pm.test(\"noiseSource\", () => { pm.expect(pm.response.json().noiseSource).to.eql('construction'); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "Verify contributor reading counter",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/contributors/{{contributorId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "contributors",
+                "{{contributorId}}"
+              ]
+            },
+            "description": "GET /api/v1/contributors/{{contributorId}}. Synthetic test data only. Run the containing folder in order."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => { pm.response.to.have.status(200); });",
+                  "pm.test(\"readingsCount\", () => { pm.expect(pm.response.json().readingsCount).to.eql(1); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "Get heatmap",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/analytics/heatmap?from={{from}}&to={{to}}&city=Postman Test City&groupBy=hourOfDay",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "analytics",
+                "heatmap"
+              ],
+              "query": [
+                {
+                  "key": "from",
+                  "value": "{{from}}"
+                },
+                {
+                  "key": "to",
+                  "value": "{{to}}"
+                },
+                {
+                  "key": "city",
+                  "value": "Postman Test City"
+                },
+                {
+                  "key": "groupBy",
+                  "value": "hourOfDay"
+                }
+              ]
+            },
+            "description": "GET /api/v1/analytics/heatmap. Synthetic test data only. Run the containing folder in order."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => { pm.response.to.have.status(200); });",
+                  "pm.test(\"Heatmap includes the created reading and hourly statistics\", () => { const n = pm.response.json().neighborhoods.find(x => x.neighborhoodId === pm.variables.get('neighborhoodId')); pm.expect(n).to.exist; pm.expect(n.readingsCount).to.eql(1); pm.expect(n.averageDecibelLevel).to.eql(65); pm.expect(n.hourly).to.have.lengthOf(1); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "Get sensitive site exposure",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/analytics/sensitive-sites/{{siteId}}/exposure?from={{from}}&to={{to}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "analytics",
+                "sensitive-sites",
+                "{{siteId}}",
+                "exposure"
+              ],
+              "query": [
+                {
+                  "key": "from",
+                  "value": "{{from}}"
+                },
+                {
+                  "key": "to",
+                  "value": "{{to}}"
+                }
+              ]
+            },
+            "description": "GET /api/v1/analytics/sensitive-sites/{{siteId}}/exposure. Synthetic test data only. Run the containing folder in order."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => { pm.response.to.have.status(200); });",
+                  "pm.test(\"site.id\", () => { pm.expect(pm.response.json().site.id).to.eql(pm.variables.get('siteId')); });",
+                  "pm.test(\"Exposure includes the created reading\", () => { pm.expect(pm.response.json().readingsCount).to.be.at.least(1); pm.expect(pm.response.json().maxDecibelLevel).to.be.at.least(65); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "Reject unauthenticated admin update",
+          "request": {
+            "method": "PATCH",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/metrics/noise/{{readingId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "metrics",
+                "noise",
+                "{{readingId}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"isFlagged\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "PATCH /api/v1/metrics/noise/{{readingId}}. Synthetic test data only. Run the containing folder in order."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 401\", () => { pm.response.to.have.status(401); });",
+                  "pm.test(\"error\", () => { pm.expect(pm.response.json().error).to.eql('Unauthorized'); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "Reject deletion of referenced neighborhood",
+          "request": {
+            "method": "DELETE",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/neighborhoods/{{neighborhoodId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "neighborhoods",
+                "{{neighborhoodId}}"
+              ]
+            },
+            "description": "DELETE /api/v1/neighborhoods/{{neighborhoodId}}. Requires adminToken environment variable. Synthetic test data only. Run the containing folder in order."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 409\", () => { pm.response.to.have.status(409); });",
+                  "pm.test(\"error\", () => { pm.expect(pm.response.json().error).to.eql('Conflict'); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "Delete noise reading",
+          "request": {
+            "method": "DELETE",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/metrics/noise/{{readingId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "metrics",
+                "noise",
+                "{{readingId}}"
+              ]
+            },
+            "description": "DELETE /api/v1/metrics/noise/{{readingId}}. Requires adminToken environment variable. Synthetic test data only. Run the containing folder in order."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 204\", () => { pm.response.to.have.status(204); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "Confirm noise reading deleted",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/metrics/noise/{{readingId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "metrics",
+                "noise",
+                "{{readingId}}"
+              ]
+            },
+            "description": "GET /api/v1/metrics/noise/{{readingId}}. Synthetic test data only. Run the containing folder in order."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 404\", () => { pm.response.to.have.status(404); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "Verify contributor counter after deletion",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/contributors/{{contributorId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "contributors",
+                "{{contributorId}}"
+              ]
+            },
+            "description": "GET /api/v1/contributors/{{contributorId}}. Synthetic test data only. Run the containing folder in order."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => { pm.response.to.have.status(200); });",
+                  "pm.test(\"readingsCount\", () => { pm.expect(pm.response.json().readingsCount).to.eql(0); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "Delete sensitive site",
+          "request": {
+            "method": "DELETE",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/sensitive-sites/{{siteId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "sensitive-sites",
+                "{{siteId}}"
+              ]
+            },
+            "description": "DELETE /api/v1/sensitive-sites/{{siteId}}. Requires adminToken environment variable. Synthetic test data only. Run the containing folder in order."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 204\", () => { pm.response.to.have.status(204); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "Delete neighborhood",
+          "request": {
+            "method": "DELETE",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/neighborhoods/{{neighborhoodId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "neighborhoods",
+                "{{neighborhoodId}}"
+              ]
+            },
+            "description": "DELETE /api/v1/neighborhoods/{{neighborhoodId}}. Requires adminToken environment variable. Synthetic test data only. Run the containing folder in order."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 204\", () => { pm.response.to.have.status(204); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "Delete contributor",
+          "request": {
+            "method": "DELETE",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/contributors/{{contributorId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "contributors",
+                "{{contributorId}}"
+              ]
+            },
+            "description": "DELETE /api/v1/contributors/{{contributorId}}. Synthetic test data only. Run the containing folder in order."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 204\", () => { pm.response.to.have.status(204); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "name": "Confirm contributor deleted",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/contributors/{{contributorId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "contributors",
+                "{{contributorId}}"
+              ]
+            },
+            "description": "GET /api/v1/contributors/{{contributorId}}. Synthetic test data only. Run the containing folder in order."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 404\", () => { pm.response.to.have.status(404); });"
+                ]
+              }
+            }
+          ],
+          "response": []
+        }
+      ]
+    }
+  ]
+}
